@@ -33,7 +33,7 @@ object ScalaAssignment extends App {
     private class JsonParser(val fileUrl: String) extends Parser {
       override def parseData(): Unit = {
         val mapper = new ObjectMapper
-        val urlData = Source.fromFile(fileUrl).mkString
+        val urlData = Source.fromResource(fileUrl).mkString
         val jsonStringData = mapper.readValue(urlData, classOf[java.util.Map[String, Object]])
         val employeeInfo = jsonStringData.getOrDefault("employeeInfo", util.Arrays.asList()).asInstanceOf[util.List[util.Map[String, Object]]]
         employeData(employeeInfo)
@@ -44,7 +44,8 @@ object ScalaAssignment extends App {
       override def parseData(): Unit = {
         val csvMapper = new CsvMapper
         val csvSchema = CsvSchema.builder().setUseHeader(true).build()
-        val inputCsvFile = new File(fileUrl)
+        val file = getClass.getResource(fileUrl).getFile()
+        val inputCsvFile = new File(file)
         val employeeInfo = csvMapper.readerFor(classOf[java.util.Map[String, String]]).`with`(csvSchema).readValues(inputCsvFile).readAll().asInstanceOf[util.List[util.Map[String, Object]]]
         employeData(employeeInfo)
       }
@@ -75,8 +76,8 @@ object ScalaAssignment extends App {
     }
   }
 
-    val parser = Parser("json", "/Users/kartheek/Documents/Workspace/playground/scala/assignment/src/main/resources/data.json")
-  //  val parser = Parser("csv", "/Users/kartheek/Documents/Workspace/playground/scala/assignment/src/main/resources/data.csv")
+//    val parser = Parser("json", "data.json")
+    val parser = Parser("csv", "data.csv")
 //  val parser = Parser("xml", "abc")
   parser.parseData()
 }
