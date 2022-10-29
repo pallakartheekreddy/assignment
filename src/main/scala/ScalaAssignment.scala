@@ -1,7 +1,7 @@
 
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
-import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema, CsvParser}
 
 import java.io.File
 import java.util
@@ -28,6 +28,16 @@ object ScalaAssignment extends App {
 
   case class employee(firstname: String, lastname: String, gender: String)
 
+  object genderList extends Enumeration {
+    type genderList = Value
+    val male = Value("Male")
+    val female = Value("Female")
+
+    def isValid(s: String) = values.exists(_.toString == s)
+
+  }
+
+
   object Parser {
 
     private class JsonParser(val fileUrl: String) extends Parser {
@@ -43,6 +53,7 @@ object ScalaAssignment extends App {
     private class CSVParser(val fileUrl: String) extends Parser {
       override def parseData(): Unit = {
         val csvMapper = new CsvMapper
+        csvMapper.configure(CsvParser.Feature.FAIL_ON_MISSING_COLUMNS, true)
         val csvSchema = CsvSchema.builder().setUseHeader(true).build()
         val file = getClass.getResource(fileUrl).getFile()
         val inputCsvFile = new File(file)
@@ -59,8 +70,16 @@ object ScalaAssignment extends App {
 
     def employeData(empData: util.List[util.Map[String, Object]]): Unit = {
       empData.map(a => {
-        println(employee(getDataFromObj(a, "firstname"), getDataFromObj(a, "lastname"), getDataFromObj(a, "gender")))
+        if(genderList.isValid(getDataFromObj(a, "gender"))){
+          println(employee(getDataFromObj(a, "firstname"), getDataFromObj(a, "lastname"), getDataFromObj(a, "gender")))
+        } else {
+          println("Invalid Gender value provided for "+ getDataFromObj(a, "firstname") + " "+ getDataFromObj(a, "lastname"))
+        }
       })
+    }
+
+    def validateCSVData(empData: util.Map[String, Object]): Unit ={
+      println(empData)
     }
 
     def getDataFromObj(data: util.Map[String, Object], key: String): String = {
